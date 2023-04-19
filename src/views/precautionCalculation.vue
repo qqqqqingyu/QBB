@@ -1,6 +1,7 @@
 <template>
   <el-row>
-    <TheNavLogin></TheNavLogin>
+    <TheNav v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin v-else></TheNavLogin>
 
     <el-col :span="2" :offset="2" class="first bread left" >
       当前位置：
@@ -245,7 +246,7 @@ export default {
           url:'https://www.bilibili.com/video/BV1uz4y1C7YP'
         },
       ],
-      isSearch:0,
+      isSearch:2,
       lottieOptions: {
         animationData: require("../assets/img/loading.json"), // 引入JSON格式的动态图文件
         loop: true, // 是否循环播放

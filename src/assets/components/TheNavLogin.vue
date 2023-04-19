@@ -1,14 +1,14 @@
 <template>
   <el-row class="my-nav-bar nav-pos center-vertically">
     <el-col :span="4" :offset="1" class="site-title">
-      <router-link to="/homepage">
+      <router-link to="/">
         <img src="src/assets/img/logo-nav.png" alt="图标" height="60" style="padding-bottom: 10px">
         <!--        <span class="logo-title">恰帮帮</span>-->
       </router-link>
     </el-col>
     <ul class="my-nav nav-list">
       <li>
-        <router-link to="/homepage">首页</router-link>
+        <router-link to="/">首页</router-link>
       </li>
       <li>
         <router-link to="/square">视频广场</router-link>
@@ -25,7 +25,7 @@
       <li class="my-name">
         <router-link to="/personalCenter" class="center-vertically ">
           <img src="src/assets/img/user.svg" height="20" alt="我的">
-          <span>恰小帮</span>
+          <span>{{ this.user.userName }}</span>
         </router-link>
       </li>
     </ul>

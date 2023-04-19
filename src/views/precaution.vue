@@ -1,6 +1,7 @@
 <template>
   <el-row class="grey-bg">
-    <TheNavLogin></TheNavLogin>
+    <TheNav v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin v-else></TheNavLogin>
 
     <el-col :span="2" :offset="2" class="first bread left" >
       当前位置：
@@ -20,13 +21,19 @@
             <el-col  style="text-align: left">
               <div class="center-vertically">
                 <img src="src/assets/img/video-example.svg" height="20" alt="优秀" style="margin-right: 8px">
-                <h2>【广场往事】欲戴皇冠，必承其重！</h2>
+                <h2>{{ videoTitle }}</h2>
               </div>
               <el-divider></el-divider>
             </el-col>
 
-            <el-col class="precaution-value">
-              <span >弹幕预警程度:低</span>
+            <el-col class="precaution-value low" v-if="precaution=='低'">
+              <span >弹幕预警程度:{{ precaution }}</span>
+            </el-col>
+            <el-col class="precaution-value medium" v-else-if="precaution=='中'">
+              <span >弹幕预警程度:{{ precaution }}</span>
+            </el-col>
+            <el-col class="precaution-value high" v-else>
+              <span >弹幕预警程度:{{ precaution }}</span>
             </el-col>
 
             <el-col :span="24" id="time"></el-col>
@@ -93,25 +100,53 @@
         </el-col>
       </el-row>
     </el-col>
-
-
   </el-row>
 </template>
 
 <script>
 import * as echarts from "_echarts@5.4.1@echarts";
+import {popularitySH, popularitySS} from "../api/video";
 
 export default {
   name: "precaution",
   data(){
     return{
+      precaution:this.$route.query.precaution,
+      videoTitle:this.$route.query.videoTitle,
       input:'',
     }
   },
   mounted() {
-    this.myTime();
+    this.popularityData();
   },
   methods:{
+    popularityData(){
+      if(this.getArea === '生活'){
+        popularitySH().then(res =>{
+          this.location = res.data.location
+          this.positive = res.data.positive
+          this.negative = res.data.negative
+          this.adStart = res.data.adStart
+          this.adEnd = res.data.adEnd
+          this.myTime();
+        })
+          .catch((res) => {
+            console.log('生活区折线图接口调用失败：' + res);
+          });
+      }else{
+        popularitySS().then(res =>{
+          this.location = res.data.location
+          this.positive = res.data.positive
+          this.negative = res.data.negative
+          this.adStart = res.data.adStart
+          this.adEnd = res.data.adEnd
+          this.myTime();
+        })
+          .catch((res) => {
+            console.log('时尚区折线图接口调用失败：' + res);
+          });
+      }
+    },
     myTime(){
       let line =  echarts.init(document.getElementById("time"));
       let option1 = {
@@ -156,7 +191,7 @@ export default {
           type: 'category',
           boundaryGap: false,
           // prettier-ignore
-            data: [0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130]
+            data: this.location
           },
         ],
         yAxis: [
@@ -204,8 +239,7 @@ export default {
             name:'积极情感值',
             type: 'line',
             smooth: true,
-            // prettier-ignore
-            data: [0.779564141,1.003322928,0.781334921,0.484618275,0.648131846,0.545476427,0.872368856,1.192477103,1.438008025,0.919013583,0.733548637,1.514565986,1.424719881,1.844154055,1.35657903,1.405941015,1.006139905,0.594113714,0.58589241,0.70736814,0.540940547,1.096176874,1.172111139,1.00833882,0.743375429,0.951472082,2.03474042,1.583043309,1.020697599,0.780350193,0.478508069,1.146455832,2.098123827,1.948855936,1.325239191,1.678336282,2.313948983,1.698690611,1.082720929,0.734549886,0.578856662,0.430431828,0.626282119,1.077999088,1.024759171,1.164350897,1.126465211,1.858335183,1.559930187,1.24120413,1.153064793,0.702757808,0.650680702,0.91728658,1.014312831,0.866795789,1.67488741,2.98489838,2.006155317,1.096097967,1.590532682,1.436491827,1.505769012,1.128311496,0.992518579,0.864765944,0.906917794,1.433678713,1.313879024,1.204753797,1.03902405,0.860502466,1.032536352,1.834073439,2.663177127,2.352946529,1.545593118,0.946229641,0.91934024,1.407062562,0.801721334,1.168923815,0.748912021,0.612109346,1.843995338,1.518525039,0.585122893,0.727626402,0.512781257,0.835835184,1.275256201,1.127178559,0.855725353,1.452827807,1.073754845,2.40866697,2.118114052,1.419667106,0.636479496,1.432193093,1.387110779,1.403673354,1.464524155,1.055797628,1.048981019,1.142300411,1.109001581,0.896350277,0.859997084,1.345122226,0.9796711,0.902872286,0.62381086,1.271972724],
+            data: this.positive,
             markArea: {
               itemStyle: {
                 color: 'rgba(192,255,249, 0.4)'
@@ -215,10 +249,10 @@ export default {
                 [
                   {
                     name: '广告区间',
-                    xAxis: '230'
+                    xAxis: this.adStart
                   },
                   {
-                    xAxis: '1130'
+                    xAxis: this.adEnd
                   }
                 ]
               ]
@@ -230,8 +264,7 @@ export default {
             name:'消极情感值',
             type: 'line',
             smooth: true,
-            // prettier-ignore
-            data: [-0.230110959,-0.334159695,-0.637578122,-0.658162828,-0.445939344,-0.389337176,-0.491173909,-0.320815768,-0.240580218,-0.545820871,-0.542276052,-0.522596113,-0.255850656,-0.348938463,-0.47024414,-0.530884535,-0.512393737,-0.103887754,-0.540267248,-0.922742888,-0.466977467,-0.253324953,-0.393912239,-0.376808772,-0.654614043,-0.367997879,-0.516805098,-0.199533383,-0.250563139,-0.146831576,-0.256599258,-0.252861083,-0.168473847,-0.16346056,-0.245084743,-0.259992492,-0.388059911,-0.215572127,-0.359843202,-0.443658511,-0.452061848,-0.471938455,-0.463622712,-0.229365126,-0.230080528,-0.163673483,-0.081618485,-0.108032859,-0.183361271,-0.332144119,-0.54731908,-0.544779092,-0.569889075,-0.399282243,-1.049979831,-0.842516496,-0.48968429,-0.225166259,-0.382406658,-0.542663708,-0.577815049,-0.345822312,-0.312731917,-0.147114562,-0.22066713,-0.300752085,-0.084658774,-0.246512855,-0.162133744,-0.215054807,-0.1618052,-0.063829787,-0.236739393,-0.119126868,-0.074619481,-0.18218141,-0.472143139,-0.563400073,-0.542934079,-0.376810735,-0.061649942,-0.399854486,-0.231522635,-0.186316052,-0.631408785,-0.469580434,-0.506597215,-0.456355629,-0.502581431,-0.184565818,-0.194639045,-0.387262426,-0.428788645,-0.545081313,-0.557399837,-0.33066474,-0.3277929,-0.409581313,-0.962098173,-0.733259368,-0.483234123,-0.325566466,-0.49853135,-0.273107291,-0.369398108,-0.313502104,-0.193085054,-0.280991437,-0.398399688,-0.26293849,-0.367990236,-0.429495813,-0.980585348,-0.648696152],
+            data: this.negative,
             // xAxisIndex: 1,
             // yAxisIndex: 1
           }
@@ -286,14 +319,27 @@ export default {
 .precaution-value{
   font-size: 21px;
   line-height: 30px;
-  background-image: linear-gradient(to right, #cbffe6, #d6ffeb, #e1fff1, #ecfff6, #f7fffb);
   margin-top: 20px;
   margin-bottom: 20px;
   text-align: center;
   padding: 8px;
   border-radius: 5px;
-  color: #55bb8a;
   font-weight: bolder;
+}
+
+.low{
+  background-image: linear-gradient(to right, #cbffe6, #d6ffeb, #e1fff1, #ecfff6, #f7fffb);
+  color: #55bb8a;
+}
+
+.medium{
+  background-image: linear-gradient(to right, #fcde85, #fce293, #fce5a1, #fbe9af, #fbecbd);
+  color: #DEA400;
+}
+
+.high{
+  background-image: linear-gradient(to right, #feb6b6, #ffc2bf, #ffcdc9, #ffd9d4, #ffe4e0);
+  color: #e46063;
 }
 
 .our-ol li{

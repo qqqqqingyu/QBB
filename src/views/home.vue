@@ -1,6 +1,7 @@
 <template>
   <div>
-    <TheNav :style="headStyle"></TheNav>
+    <TheNav :style="headStyle" v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin :style="headStyle" v-else></TheNavLogin>
 
     <el-row>
       <el-col class="my-banner">

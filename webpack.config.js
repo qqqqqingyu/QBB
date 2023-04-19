@@ -52,7 +52,15 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
     noInfo: true,
-    overlay: true
+    overlay: true,
+    proxy:{
+      '/api' : {
+        target:'http://192.168.43.241:8000',//接口域名
+        secure:false, //https接口需要配置的参数
+        logLevel:'debug',
+        changeOrigin:true //是否跨域
+      }
+    }
   },
   performance: {
     hints: false

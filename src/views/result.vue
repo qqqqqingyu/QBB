@@ -1,6 +1,7 @@
 <template>
   <el-row>
-    <TheNavLogin></TheNavLogin>
+    <TheNav v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin v-else></TheNavLogin>
 
     <el-col :span="2" :offset="2" class="first bread left" >
       当前位置：

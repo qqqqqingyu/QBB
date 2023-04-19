@@ -1,6 +1,7 @@
 <template>
   <el-row class=" model">
-    <TheNav></TheNav>
+    <TheNav v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin v-else></TheNavLogin>
 
     <el-col  class="model-bg">
       <el-row>

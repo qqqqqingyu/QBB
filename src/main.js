@@ -9,6 +9,9 @@ import components from "./components";
 //自定义全局样式
 import "./assets/css/style.css"
 import echarts from 'echarts'
+import user from "./views/user";
+Vue.prototype.user = user
+
 Vue.prototype.$echarts = echarts
 
 Vue.use(VueRouter);

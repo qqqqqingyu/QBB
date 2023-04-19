@@ -1,7 +1,7 @@
 <template>
   <el-row style="background: rgb(247,249,250)">
-    <TheNavLogin></TheNavLogin>
-
+    <TheNav v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin v-else></TheNavLogin>
 
     <el-col :span="2" :offset="2" class="first bread left" >
       当前位置：
@@ -12,17 +12,13 @@
         <el-breadcrumb-item>视频分析</el-breadcrumb-item>
       </el-breadcrumb>
     </el-col>
-<!--    <el-col :span="10" class="first right">-->
-<!--      <el-input v-model="input" placeholder="搜索视频" style="width: 40%"></el-input>-->
-<!--      <el-button type="primary" icon="el-icon-search"></el-button>-->
-<!--    </el-col>-->
 
     <el-col :span="20" :offset="2" class="main-box last">
       <el-row>
         <el-col :span="15"  style="margin-bottom: 50px" class="example-info">
           <div class="center-vertically">
             <img src="src/assets/img/square-popularity.svg" height="20" alt="优秀" style="margin-right: 8px">
-            <h2>【广场往事】欲戴皇冠，必承其重！</h2>
+            <h2>{{ videoTitle }}</h2>
           </div>
           <el-divider></el-divider>
           <el-row :gutter="20">
@@ -34,22 +30,26 @@
             <el-col :span="4">
               <div>
                 <el-statistic title="类型">
-                  <template slot="formatter"><span class="my-tag">硬广</span></template>
+                  <template slot="formatter"><span class="my-tag">{{ adType }}</span></template>
                 </el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <el-statistic title="分区">
-                <template slot="formatter"><span class="my-tag">生活</span></template>
+                <template slot="formatter"><span class="my-tag">{{ getArea }}</span></template>
               </el-statistic>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic title="广告链接">
                   <template slot="formatter">
-                    <div  class="center-vertically my-statistic">
+                    <div v-if="haveLink==1" class="center-vertically my-statistic">
                       <img src="src/assets/img/true.svg" height="20" alt="是">
                       <span style=" font-size: 18px;">是</span>
+                    </div>
+                    <div v-else class="center-vertically my-statistic">
+                      <img src="src/assets/img/false.svg" height="20" alt="否">
+                      <span style=" font-size: 18px;">否</span>
                     </div>
                   </template>
                 </el-statistic>
@@ -59,9 +59,13 @@
               <div>
                 <el-statistic title="合作视频">
                   <template slot="formatter">
-                    <div  class="center-vertically my-statistic">
+                    <div v-if="isCooperation==1" class="center-vertically my-statistic">
                       <img src="src/assets/img/true.svg" height="20" alt="是">
                       <span style=" font-size: 18px;">是</span>
+                    </div>
+                    <div v-else class="center-vertically my-statistic">
+                      <img src="src/assets/img/false.svg" height="20" alt="否">
+                      <span style=" font-size: 18px;">否</span>
                     </div>
                   </template>
                 </el-statistic>
@@ -71,9 +75,13 @@
               <div>
                 <el-statistic title="商品性质和视频分区">
                   <template slot="formatter">
-                    <div  class="center-vertically my-statistic">
+                    <div v-if="matching==1" class="center-vertically my-statistic">
+                      <img src="src/assets/img/true.svg" height="20" alt="是">
+                      <span style=" font-size: 18px;">匹配</span>
+                    </div>
+                    <div v-else class="center-vertically my-statistic">
                       <img src="src/assets/img/false.svg" height="20" alt="否">
-                      <span style=" font-size: 18px;">不匹配</span>
+                      <span style=" font-size: 18px;">否</span>
                     </div>
                   </template>
                 </el-statistic>
@@ -101,7 +109,7 @@
             <el-col :span="13" :offset="1">
               <el-row class="popularity-box">
                 <el-col>
-                  <h3>流行度:1.13</h3>
+                  <h3>流行度:{{ popularity }}</h3>
                 </el-col>
               </el-row>
             </el-col>
@@ -114,9 +122,9 @@
                 </el-col>
 
                 <el-col :span="8" :offset="1"  class="info">播放量:</el-col>
-                <el-col :span="4">448.8w</el-col>
+                <el-col :span="4">{{ airplay }}w</el-col>
                 <el-col :span="7" >时长:</el-col>
-                <el-col :span="3">18:49</el-col>
+                <el-col :span="3">{{ videoLength }}s</el-col>
 
               </el-row>
               <el-row class="result-content">
@@ -125,17 +133,17 @@
                   <span>UP主信息</span>
                 </el-col>
                 <el-col :span="9" :offset="1"  class="info">累计视频投稿量:</el-col>
-                <el-col :span="3">392</el-col>
+                <el-col :span="3">{{ cumulativeSubmissions }}</el-col>
                 <el-col :span="6">累计播放量:</el-col>
-                <el-col :span="3">25389.2w</el-col>
+                <el-col :span="3">{{ cumulativeAirplay }}w</el-col>
 
                 <el-col :span="8" :offset="1"  class="info">累计获赞数:</el-col>
-                <el-col :span="4">2175.8w</el-col>
+                <el-col :span="4">{{ cumulativeLike }}w</el-col>
                 <el-col :span="6">粉丝数:</el-col>
-                <el-col :span="3">328.2w</el-col>
+                <el-col :span="3">{{ fans }}w</el-col>
 
                 <el-col :span="9" :offset="1"  class="info">视频更新频率:</el-col>
-                <el-col :span="3">13天</el-col>
+                <el-col :span="3">{{ updateFrequency }}天</el-col>
               </el-row>
             </el-col>
           </el-row>
@@ -152,7 +160,7 @@
         </el-col>
 
         <el-col :span="8" :offset="1">
-          <img src="src/assets/img/video/51.jpg" class="video-img hand" @click="toBilibili(url)" alt="video">
+          <img :src="'src/assets/img/video/'+getId+'.jpg'" class="video-img hand" @click="toBilibili(this.videoLink)" alt="video">
 
           <el-row>
             <el-col>
@@ -160,8 +168,8 @@
                 <el-collapse-item title="弹幕列表" name="1">
                   <el-row class="left">
                     <el-scrollbar style="height: 300px" class="my-scroll">
-                      <el-col v-for="item in bulletScreen">
-                        {{item}}
+                      <el-col v-for="item in bulletScreens">
+                        {{item.danmu}}
                       </el-col>
                     </el-scrollbar>
                   </el-row>
@@ -192,9 +200,6 @@
         </el-col>
       </el-row>
     </el-col>
-
-
-
   </el-row>
 </template>
 
@@ -202,301 +207,245 @@
 import * as echarts from 'echarts';
 import "echarts-wordcloud/dist/echarts-wordcloud";
 import "echarts-wordcloud/dist/echarts-wordcloud.min";
+import {
+  cloudSH,
+  cloudSS,
+  detailsListSH,
+  detailsListSS,
+  detailsSH,
+  detailsSS,
+  frequencySH,
+  frequencySS, popularitySH, popularitySS
+} from "../api/video";
 
 export default {
   name: "details",
   data(){
     return{
       getId:this.$route.query.detailId,
-      input:'',
-      url:'https://www.bilibili.com/video/BV1yL4y1B7JF',
+      getArea:this.$route.query.area,
+      myData:{
+        phone:this.user.phone,
+        videoId:this.$route.query.detailId
+      },
+      popularity:'', // 流行度
+      videoTitle:'', // 视频标题
+      airplay:'', // 播放量
+      like:'', // 点赞
+      collection:'', // 收藏
+      forwarding:'', // 转发
+      comments:'', // 评论
+      coin:'', // 投币
+      adType:'', // 广告类型
+      haveLink:'', // 是否有广告链接
+      isCooperation:'', // 是否合作视频
+      matching:'', // 商品性质和视频分区是否匹配
+      cumulativeSubmissions:'', // 累计视频投稿量
+      cumulativeAirplay:'', // 累计播放量
+      cumulativeLike:'', // 累计获赞数
+      fans:'', // 粉丝数
+      updateFrequency:'', // 视频更新频率
+      videoLength:'', // 视频时长
+      bulletScreen:'', // 弹幕数量
+      videoLink:'', // 视频链接
       video:[
         {
           imgUrl:'src/assets/img/video/42.jpg',
           title:'【广场往事】凤凰涅槃吧！',
           url:'https://www.bilibili.com/video/BV1cL411V7Zr'
-        },
-        {
-          imgUrl:'src/assets/img/video/129.jpg',
-          title:'当你看到它，恭喜你的经济实力被大数据认可了',
-          url:'https://www.bilibili.com/video/BV1n3411j7TY'
-        },
-        {
-          imgUrl:'src/assets/img/video/8.jpg',
-          title:'2021“画饼”挑战',
-          url:'https://www.bilibili.com/video/BV1JT4y1P77e'
-        },
-        {
-          imgUrl:'src/assets/img/video/101.jpg',
-          title:'当代达芬奇！',
-          url:'https://www.bilibili.com/video/BV1fV411k7T2'
-        },
-        {
-          imgUrl:'src/assets/img/video/14.jpg',
-          title:'自制宅男快乐器，吃喝玩乐游戏机',
-          url:'https://www.bilibili.com/video/BV1uz4y1C7YP'
-        },
+        }
       ],
       activeNames: ['1'],
-      bulletScreen:[
-        "所以鹅姐永远不会退位了是吗？","国道","这个马小玲笑死了","鲁西南小肥羊表示不服","都是大鹏的人（）",
-        "蚌埠住了","无间道2名场面","日内瓦！！！退钱！","我鹅姨，哪个叫的楂姐","这精神也出户了吧","娥姐可能要死不瞑目了",
-        "甲方你广告这么做，真不怕卖不出去？","没有特写对的人物刻画不利呀","肥牛不新鲜 散架了都","岳云鹏？？？","好家伙，到这三连了",
-      ],
-      worddata: [
-        {
-          name: "泪目",
-          value: 576
-        },
-        {
-          name: "真的",
-          value: 548
-        },{
-          name: "笑死",
-          value: 488
-        },
-        {
-          name: "喜剧之王",
-          value: 333
-        },
-        {
-          name: "好家伙",
-          value: 281
-        },
-        {
-          name: "猝不及防",
-          value: 193
-        },
-        {
-          name: "导演",
-          value: 179
-        },
-        {
-          name: "细节",
-          value: 174
-        },
-        {
-          name: "耽误",
-          value: 167
-        },
-        {
-          name: "呜呜呜",
-          value: 171
-        },
-        {
-          name: "厉害",
-          value: 153
-        },
-        {
-          name: "大爷",
-          value: 120
-        },
-        {
-          name: "不会",
-          value: 111
-        },
-        {
-          name: "好看",
-          value: 111
-        },
-        {
-          name: "女儿",
-          value: 105
-        },
-        {
-          name: "一定",
-          value: 99
-        },
-        {
-          name: "我要",
-          value: 100
-        },
-        {
-          name: "致敬",
-          value: 92
-        },
-        {
-          name: "孩子",
-          value: 92
-        },
-        {
-          name: "居然",
-          value: 86
-        },
-        {
-          name: "不行",
-          value: 84
-        },
-        {
-          name: "鹅姐",
-          value: 66
-        },
-        {
-          name: "笑不活了",
-          value: 65
-        },
-        {
-          name: "离谱",
-          value: 65
-        },
-        {
-          name: "经典",
-          value:63
-        },
-        {
-          name: "不愧是",
-          value:57
-        },{
-          name: "爸爸",
-          value:56
-        },
-        {
-          name: "前方高能",
-          value:66
-        },{
-          name: "红火火恍恍惚惚",
-          value:56
-        },
-        {
-          name: "私货",
-          value:55
-        },
-        {
-          name: "一场空",
-          value:51
-        },
-      ],
-      lifeData: [
-        {
-          name: "猝不及防",
-          value: 13896
-        },
-        {
-          name: "可爱",
-          value: 10671
-        },{
-          name: "笑死",
-          value: 10519
-        },
-        {
-          name: "广告",
-          value: 8482
-        },
-        {
-          name: "好吃",
-          value: 7410
-        },
-        {
-          name: "喜欢",
-          value: 7395
-        },
-        {
-          name: "来了",
-          value: 6999
-        },
-        {
-          name: "好家伙",
-          value: 6412
-        },
-        {
-          name: "泪目",
-          value: 5815
-        },
-        {
-          name: "好看",
-          value: 4610
-        },
-        {
-          name: "爱",
-          value: 4548
-        },
-        {
-          name: "狂喜",
-          value: 4212
-        },
-        {
-          name: "危",
-          value: 4150
-        },
-        {
-          name: "牛",
-          value: 3636
-        },
-        {
-          name: "快跑",
-          value: 3248
-        },
-        {
-          name: "博爱",
-          value: 3143
-        },
-        {
-          name: "离谱",
-          value: 2797
-        },
-        {
-          name: "不至于",
-          value: 2792
-        },
-        {
-          name: "甲方",
-          value: 2708
-        },
-        {
-          name: "厉害",
-          value: 2497
-        },
-        {
-          name: "不对劲",
-          value: 2409
-        },
-        {
-          name: "害怕",
-          value: 2386
-        },
-        {
-          name: "老板",
-          value: 2285
-        },
-        {
-          name: "梦幻联动",
-          value: 2202
-        },
-        {
-          name: "热乎",
-          value:2118
-        },
-        {
-          name: "真实",
-          value:2033
-        },{
-          name: "好帅",
-          value:2004
-        },
-        {
-          name: "前方高能",
-          value:1808
-        },{
-          name: "下次一定",
-          value:1761
-        },
-        {
-          name: "硬核",
-          value:1735
-        },
-      ],
+      bulletScreens:[],
+      wordData: [],
+      areaData: [],
+      location: [],
+      count: [],
+      adStart: '',
+      adEnd: '',
     }
   },
   mounted(){
-    this.myTime();
-    this.myCloud();
-    this.partCloud();
-    this.myRadar();
+    // 获取数据
+    this.detailData();
+    this.detailsList();
+    this.frequencyData();
+    this.popularityData();
   },
   methods:{
     toBilibili(myUrl){
       window.open(myUrl, "_blank");
     },
+    // 视频详情获取
+    detailData(){
+      if(this.getArea === '生活'){
+        detailsSH(this.myData).then(res =>{
+          this.videoTitle = res.data.videoTitle
+          this.airplay = res.data.airplay
+          this.like = res.data.like
+          this.collection = res.data.collection
+          this.forwarding = res.data.forwarding
+          this.comments = res.data.comments
+          this.coin = res.data.coin
+          this.adType = res.data.adType
+          this.haveLink = res.data.haveLink
+          this.isCooperation = res.data.isCooperation
+          this.matching = res.data.matching
+          this.cumulativeSubmissions = res.data.cumulativeSubmissions
+          this.cumulativeAirplay = res.data.cumulativeAirplay
+          this.cumulativeLike = res.data.cumulativeLike
+          this.fans = res.data.fans
+          this.updateFrequency = res.data.updateFrequency
+          this.videoLength = res.data.videoLength
+          this.bulletScreen = res.data.bulletScreen
+          this.videoLink = res.data.videoLink
+          this.popularity = res.data.popularity
+          // 雷达图
+          this.myRadar();
+        })
+          .catch((res) => {
+            console.log('生活区视频详情接口调用失败：' + res);
+          });
+      }else{
+        detailsSS(this.myData).then(res =>{
+          this.videoTitle = res.data.videoTitle
+          this.airplay = res.data.airplay
+          this.like = res.data.like
+          this.collection = res.data.collection
+          this.forwarding = res.data.forwarding
+          this.comments = res.data.comments
+          this.coin = res.data.coin
+          this.adType = res.data.adType
+          this.haveLink = res.data.haveLink
+          this.isCooperation = res.data.isCooperation
+          this.matching = res.data.matching
+          this.cumulativeSubmissions = res.data.cumulativeSubmissions
+          this.cumulativeAirplay = res.data.cumulativeAirplay
+          this.cumulativeLike = res.data.cumulativeLike
+          this.fans = res.data.fans
+          this.updateFrequency = res.data.updateFrequency
+          this.videoLength = res.data.videoLength
+          this.bulletScreen = res.data.bulletScreen
+          this.videoLink = res.data.videoLink
+          this.popularity = res.data.popularity
+          // 雷达图
+          this.myRadar();
+        })
+          .catch((res) => {
+            console.log('时尚区视频详情接口调用失败：' + res);
+          });
+      }
+    },
+    // 弹幕列表获取
+    detailsList(){
+      if(this.getArea === '生活'){
+        detailsListSH(this.myData).then(res =>{
+          this.bulletScreens = res.data
+        })
+          .catch((res) => {
+            console.log('生活区弹幕列表接口调用失败：' + res);
+          });
+      }else{
+        detailsListSS(this.myData).then(res =>{
+          this.bulletScreens = res.data
+        })
+          .catch((res) => {
+            console.log('时尚区弹幕列表接口调用失败：' + res);
+          });
+      }
+    },
+    // 词云图数据获取
+    frequencyData(){
+      let phoneData = {
+        phone:this.user.phone
+      }
+
+      if(this.getArea === '生活'){
+        // 生活区全区词云图
+        cloudSH(phoneData).then(res =>{
+          for(let i = 0;i <= res.data.danmu.length;i++){
+            // y轴数据的转化
+            this.areaData.push({
+              name: res.data.danmu[i],
+              value: res.data.count[i],
+            })
+          }
+          this.areaCloud();
+        })
+          .catch((res) => {
+            console.log('生活区视频词云图接口调用失败：' + res);
+          });
+
+        // 视频词云图
+        frequencySH(this.myData).then(res =>{
+          this.wordData = res.data
+          // for(let i = 0;i < res.data.length;i++){
+          //   // y轴数据的转化
+          //   this.wordData.push({
+          //     name: res.data[i].name,
+          //     value: res.data[i].value,
+          //   })
+          // }
+          // console.log('wordData'+JSON.stringify(this.wordData))
+
+          console.log('获取数据完成')
+          this.myCloud();
+        })
+          .catch((res) => {
+            console.log('生活区词云图接口调用失败：' + res);
+          });
+      }else{
+        // 时尚区全区词云图
+        cloudSS(phoneData).then(res =>{
+          for(let i = 0;i <= res.data.danmu.length;i++){
+            // y轴数据的转化
+            this.areaData.push({
+              name: res.data.danmu[i],
+              value: res.data.count[i],
+            })
+          }
+          this.areaCloud()
+        })
+          .catch((res) => {
+            console.log('时尚区全区词云图接口调用失败：' + res);
+          });
+
+        // 视频词云图
+        frequencySS(this.myData).then(res =>{
+          this.wordData = res.data
+          this.myCloud()
+        })
+          .catch((res) => {
+            console.log('时尚区全区接口调用失败：' + res);
+          });
+      }
+    },
+    popularityData(){
+      if(this.getArea === '生活'){
+        popularitySH(this.myData).then(res =>{
+          this.location = res.data.location
+          this.count = res.data.count
+          this.adStart = res.data.adStart
+          this.adEnd = res.data.adEnd
+          this.myTime();
+        })
+          .catch((res) => {
+            console.log('生活区折线图接口调用失败：' + res);
+          });
+      }else{
+        popularitySS(this.myData).then(res =>{
+          this.location = res.data.location
+          this.count = res.data.count
+          this.adStart = res.data.adStart
+          this.adEnd = res.data.adEnd
+          this.myTime();
+        })
+          .catch((res) => {
+            console.log('时尚区折线图接口调用失败：' + res);
+          });
+      }
+    },
+    // 词频词云图
     myCloud() {
       let cloud =  echarts.init(document.getElementById("my-word-cloud"));
       const color1 = ["#0091B5","#00B685","#61C365","#77d07a","#8cdd8e", "#a0e9a3", "#b5f6b8"]
@@ -512,7 +461,7 @@ export default {
           {
             type: "wordCloud",
             //用来调整词之间的距离
-            gridSize: 10,
+            gridSize: 9,
             //用来调整字的大小范围
             // Text size range which the value in data will be mapped to.
             // Default to have minimum 12px and maximum 60px size.
@@ -540,13 +489,14 @@ export default {
             width: "180%",
             height: "150%",
             //数据
-            data: this.worddata,
+            data: this.wordData.slice(0,50),
           }
         ]
       };
       cloud.setOption(option);
     },
-    partCloud(){
+    // 分区词云图
+    areaCloud(){
       let cloud =  echarts.init(document.getElementById("part-word-cloud"));
       const color = [
         '#48A5F3', '#00C1F9', '#00D9E4', '#6690E8', '#00CAB9', '#00D2D0', '#0092F4',
@@ -563,7 +513,7 @@ export default {
           {
             type: "wordCloud",
             //用来调整词之间的距离
-            gridSize: 10,
+            gridSize: 9,
             //用来调整字的大小范围
             // Text size range which the value in data will be mapped to.
             // Default to have minimum 12px and maximum 60px size.
@@ -588,15 +538,16 @@ export default {
             top: "center",
             right: null,
             bottom: '2%',
-            width: "180%",
-            height: "160%",
+            width: "170%",
+            height: "140%",
             //数据
-            data: this.lifeData,
+            data: this.areaData.slice(0,45),
           }
         ]
       };
       cloud.setOption(option);
     },
+    // 折线图
     myTime(){
       let line =  echarts.init(document.getElementById("time"));
       let option1 = {
@@ -632,7 +583,7 @@ export default {
           type: 'category',
           boundaryGap: false,
           // prettier-ignore
-          data: [0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130]
+          data: this.location
         },
           // {
           //   type: 'category',
@@ -711,7 +662,7 @@ export default {
             name: 'Electricity',
             type: 'line',
             smooth: true,
-            data: [276,216,211,193,254,170,151,157,185,132,229,219,124,188,281,255,138,81,114,144,63,48,179,475,457,219,190,169,117,142,146,192,129,190,126,121,315,226,117,120,106,134,187,179,209,195,233,258,169,253,204,196,136,75,235,211,234,388,165,115,236,162,178,62,101,219,165,115,197,97,73,47,151,210,314,270,142,175,120,124,138,109,130,129,93,111,103,142,93,120,108,112,163,173,86,167,130,84,120,148,214,168,163,173,209,264,229,192,192,192,156,195,132,38],
+            data: this.count,
             markArea: {
               itemStyle: {
                 color: 'rgba(192,255,249, 0.4)'
@@ -769,6 +720,7 @@ export default {
       };
       line.setOption(option1);
     },
+    // 雷达图
     myRadar(){
       let radar =  echarts.init(document.getElementById("my-radar"));
       let option = {
@@ -824,7 +776,7 @@ export default {
             },
             data: [
               {
-                value: [36.5, 35.1, 6.9, 4.7, 3.0, 0.7],
+                value: [this.like, this.coin, this.collection, this.forwarding, this.bulletScreen, this.comments],
                 areaStyle: {
                   color: 'rgba(697.7, 228, 52, 0.6)'
                 },

@@ -1,6 +1,7 @@
 <template>
   <el-row>
-    <TheNavLogin></TheNavLogin>
+    <TheNav v-if="this.user.phone == ''"></TheNav>
+    <TheNavLogin v-else></TheNavLogin>
 
     <el-col style="margin-top: 50px">
       <img src="src/assets/img/poster-personal2.png" width="100%" alt="背景">
@@ -8,8 +9,8 @@
 
     <el-col class="personal-info">
       <img src="src/assets/img/avatar.jpg" width="110" alt="头像" style="border-radius: 50%" >
-      <h3>恰小帮</h3>
-      <span>UP主</span>
+      <h3>{{ this.user.userName }}</h3>
+      <span>{{ userType }}</span>
     </el-col>
 
     <el-col class="content-box">
@@ -21,81 +22,77 @@
              <h3 style="color: #2c3e50;">个人信息</h3>
            </el-col>
            <el-col :span="15" :offset="1">累计视频发布量</el-col>
-           <el-col :span="8">32</el-col>
+           <el-col :span="8">{{ cumulativeSubmissions }}</el-col>
 
            <el-col :span="15" :offset="1">累计播放量</el-col>
-           <el-col :span="8">61.5W</el-col>
+           <el-col :span="8">{{ cumulativeAirplay }}W</el-col>
 
            <el-col :span="15" :offset="1">累计获赞数</el-col>
-           <el-col :span="8">17.6W</el-col>
+           <el-col :span="8">{{ cumulativeLike }}W</el-col>
 
            <el-col :span="15" :offset="1">粉丝数</el-col>
-           <el-col :span="8">12W</el-col>
+           <el-col :span="8">{{ fans }}W</el-col>
          </el-row>
         </el-col>
 
         <el-col :span="13" :offset="1" class="part last right-box left">
-          <h3 style="color: #2c3e50;">历史记录</h3>
+          <el-row>
+            <el-col :span="16">
+              <h3 style="color: #2c3e50;margin-top: 10px;">历史记录</h3>
+            </el-col>
+            <el-col :span="8" class="right">
+              <el-radio-group v-model="part" class="radio-bg">
+                <el-radio-button class="industry-radio" label="流行度"></el-radio-button>
+                <el-radio-button class="industry-radio" label="预警"></el-radio-button>
+              </el-radio-group>
+            </el-col>
+          </el-row>
 
 
-          <el-row class="history left">
+          <el-row class="history left" v-if="part == '预警'" v-for="item in precautionData">
             <el-col :span="18" :offset="1" class="right-part-title">
-              <span>在老妈生气的边缘疯狂试探</span>
+              <span>{{ item.videoTitle }}</span>
               <span class="history-tag2">弹幕预警</span>
             </el-col>
-            <el-col :span="4" class="right">2023.3.31</el-col>
+            <el-col :span="4" class="right">{{ item.date }}</el-col>
 
             <el-col :span="22" :offset="1">
-              预警程度：中
+              预警程度：{{ item.precaution }}
             </el-col>
-            <el-col :span="22" :offset="1">
-              建议：作为一位视频创作者，您可以通过调整视频内容的方式来降低观众对您视频的负面反馈,包括避免使用敏感或带有贬义的词语、强调产品或广告的过度推销、注重产品实际……
+            <el-col :span="22" :offset="1" class="more">
+              建议：
+              <span v-for="i in item.precautionAdvice.length">
+                {{ item.precautionAdvice[i-1] }}
+              </span>
             </el-col>
 
             <el-col :span="23" class="right">
-              <a class="hand" @click="openDetail">查看详情</a>
+              <a class="hand" @click="openPrecautionDeatil(item)">查看详情</a>
             </el-col>
-
           </el-row>
-          <el-row class="history left">
+
+          <el-row class="history left" v-else v-for="item in popularityData">
             <el-col :span="18" :offset="1" class="right-part-title">
-              <span >不上班的日子真的很有趣</span>
+              <span >{{ item.videoTitle }}</span>
               <span class="history-tag1">流行度预测</span>
             </el-col>
-            <el-col :span="4" class="right">2023.2.17</el-col>
+            <el-col :span="4" class="right">{{ item.date }}</el-col>
 
             <el-col :span="22" :offset="1">
-              预测分数：4.32
+              预测分数：{{ item.point }}
             </el-col>
-            <el-col :span="22" :offset="1">
-              建议：优化视频标题和描述：标题和描述是让人们点击观看视频的关键。为了吸引更多的观众，标题和描述应该简短、吸引人、明确表达视频的主题和内容；制作优质内容：制作……
+            <el-col :span="22" :offset="1" class="more">
+              建议：
+              <span v-for="i in item.totalAdvice.length">
+                {{ item.totalAdvice[i-1] }}
+              </span>
             </el-col>
 
             <el-col :span="23" class="right">
-              <a class="hand" @click="openDetail">查看详情</a>
+              <a class="hand" @click="openPopularityDetail(item)">查看详情</a>
             </el-col>
           </el-row>
 
-
-          <el-row class="history left">
-            <el-col :span="18" :offset="1" class="right-part-title">
-              <span >当我用动画片角色声线，去为《狂飙》里的人物配音时</span>
-              <span class="history-tag1">流行度预测</span>
-            </el-col>
-            <el-col :span="4" class="right">2023.1.29</el-col>
-
-            <el-col :span="22" :offset="1">
-              预测分数：1.34
-            </el-col>
-            <el-col :span="22" :offset="1">
-              建议：您的视频标题较长。“有趣”是视频的直接吸引力。您可以标题控制在18个字内，把看点写在最前面、直击痛点。您可以使用这些标题公式：①新信息：外网最火的彩妆首测……
-            </el-col>
-
-            <el-col :span="23" class="right">
-              <a class="hand" @click="openDetail">查看详情</a>
-            </el-col>
-
-          </el-row>
         </el-col>
       </el-row>
     </el-col>
@@ -103,38 +100,127 @@
 </template>
 
 <script>
+import {historyPopularity, historyPrecaution, userInfo} from "../api/personal";
+
 export default {
   name: "personalCenter",
+  data(){
+    return{
+      phoneData:{
+        phone:this.user.phone
+      },
+      part:'流行度', //
+      // userName:'',
+      userType:'', // 用户类型
+      cumulativeSubmissions:'', // 累计视频投稿量
+      cumulativeAirplay:'', // 累计视频投稿量
+      cumulativeLike:'', // 累计获赞数
+      fans:'', // 粉丝数
+      popularityData:'', // 流行度历史记录
+      precautionData:'', // 预警器历史记录
+      test:{
+        totalAdvice:['单开一个恰饭标题系列，让老观众看标题就知道是恰饭视频，以免在视频中突然恰饭引起观众反感'
+        ,'单开一个恰饭标题系列，让老观众看标题就知道是恰饭视频，以免在视频中突然恰饭引起观众反感',
+        '单开一个恰饭标题系列，让老观众看标题就知道是恰饭视频，以免在视频中突然恰饭引起观众反感。'],
+        yourFormulation:['单开一个恰饭标题系列，让如UP主老番茄的'],
+        popularityAdvice:['aaa','aasdasdadad1'],
+        reason:['1ad','adsa1','12e'],
+        inspiration:['aa','ss','aaa']
+      }
+    }
+  },
+  mounted() {
+    // this.userInfoData()
+    // this.historyPopularityData()
+    // this.historyPrecautionData()
+  },
   methods:{
-    openDetail(){
+    userInfoData(){
+      userInfo(this.phoneData).then(res=>{
+        // this.userName = res.data.userName
+        this.userType = res.data.userType
+        this.cumulativeSubmissions = res.data.cumulativeSubmissions
+        this.cumulativeAirplay = res.data.cumulativeAirplay
+        this.cumulativeLike = res.data.cumulativeLike
+        this.fans = res.data.fans
+      })
+    },
+    historyPopularityData(){
+      historyPopularity(this.phoneData).then(res=>{
+        this.popularityData = res.data
+      })
+        .catch((res) => {
+        console.log('流行度历史接口调用失败：' + res);
+      });
+    },
+    historyPrecautionData(){
+      historyPrecaution(this.phoneData).then(res=>{
+        this.precautionData = res.data
+      })
+        .catch((res) => {
+          console.log('预警器历史接口调用失败：' + res);
+        });
+    },
+    openPopularityDetail(content){
+      let adviceHtml = ''
+      let detailsHtml = ''
+      let inspirationHtml = ''
+
+      for(let i = 1; i <= content.totalAdvice.length; i++){
+        adviceHtml = adviceHtml + '<li>'+content.totalAdvice[i-1]+'</li><br>'
+      }
+
+      for(let i = 1; i <= content.yourFormulation.length; i++){
+        detailsHtml = detailsHtml + '<ol><li>您的表述：'+content.yourFormulation[i-1]+'</li><br>' +
+            '<li>修改建议：'+content.popularityAdvice[i-1]+'</li><br>' +
+            '<li>理由：'+content.reason[i-1]+'</li><br>' +
+          '</ol>';
+      }
+
+      for(let i = 1; i <= content.inspiration.length; i++){
+        inspirationHtml = inspirationHtml + '<li>'+content.inspiration[i-1]+'</li><br>'
+      }
+
+      let adviceContent = '<el-scrollbar style="height: 200px" class="my-scroll">' +
+      '<div><h4>整体内容</h4>' +
+      '          <p>从整体视频制作上，您还可以：</p>' +
+      '          <ol>' + adviceHtml +
+      '          </ol>' +
+      '          <h4>详细建议</h4>' +
+      '          <p>针对您的具体内容，可以调整以下部分：</p>' + detailsHtml+
+      '          <h4>灵感</h4>' +
+      '          <p>您可以参考以下思路：</p>' +
+      '          <ol>' + inspirationHtml +
+      '          </ol></div></el-scrollbar>'
+
       this.$notify({
         title: '建议',
         dangerouslyUseHTMLString: true,
-        message: '<h4>整体内容</h4>\n' +
-          '          <p>从整体视频制作上，您还可以：</p>\n' +
-          '          <ol>\n' +
-          '            <li>优化视频标题和描述：标题和描述是让人们点击观看视频的关键。为了吸引更多的观众，标题和描述应该简短、吸引人、明确表达视频的主题和内容</li>\n' +
-          '            <li>制作优质内容：制作高质量的视频是吸引更多观众的基本要素。您可以考虑加入一些特殊的效果、动画或剪辑，使视频更加生动有趣</li>\n' +
-          '            <li>与受众互动：在视频下方留言区回复观众的评论，回答他们的问题，增强互动，吸引更多观众</li>\n' +
-          '            <li>利用SEO优化：通过搜索引擎优化（SEO）的技术手段，包括关键词排名和元数据优化等方法，提高视频在搜索引擎中的排名，让更多人看到您的视频</li>\n' +
-          '          </ol>\n' +
-          '\n' +
-          '          <h4>详细建议</h4>\n' +
-          '          <p>针对您的具体内容，可以调整以下部分：</p>\n' +
-          '              <ol><li>您的表述：感谢甲方爸爸的大力支持！</li>\n' +
-          '              <li>修改建议：可以将恰饭内容结合进视频剧情中，降低违和感。建议不直接表达“甲方”。</li>\n' +
-          '              <li>理由：您的视频具有一定的情节性。强调“甲方”可能会降低观众观赏连贯性。</li>' +
-          '              </ol>\n' +
-          '          <h4>灵感</h4>\n' +
-          '          <p>您可以参考以下思路：</p>\n' +
-          '          <ol>\n' +
-          '            <li>单开一个恰饭标题系列，让老观众看标题就知道是恰饭视频，以免在视频中突然恰饭引起观众反感。如UP主老番茄的“番茄带你……”系列</li>\n' +
-          '            <li>如果您的赞助商同意提供独家折扣或福利，您可以在视频中分享这些信息，以吸引更多的观众</li>\n' +
-          '\n' +
-          '          </ol>',
+        message: adviceContent,
         position: 'top-left',
         duration: 0
       });
+    },
+    openPrecautionDeatil(content){
+      let adviceHtml = ''
+
+      for(let i = 1; i <= content.totalAdvice.length; i++){
+        adviceHtml = adviceHtml + '<li>'+content.totalAdvice[i-1]+'</li><br>'
+      }
+
+      let adviceContent = '<el-scrollbar style="height: 200px" class="my-scroll">' +
+        '<p>您可以尝试使用以下方法降低负面反馈：</p>' +
+        '<ol>' + adviceHtml +
+        '</ol></el-scrollbar>'
+
+      this.$notify({
+        title: '建议',
+        dangerouslyUseHTMLString: true,
+        message: adviceContent,
+        position: 'top-left',
+        duration: 0
+      });
+
     }
   }
 }
@@ -146,8 +232,8 @@ export default {
   height: 100px;
 }
 .personal-info h3{
-  margin-top: 5px;
   margin-bottom: 5px;
+  margin-top: 5px;
 }
 
 .content-box{
@@ -213,5 +299,45 @@ export default {
 
 .el-notification{
   width: 100%;
+}
+
+.more{
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.radio-bg {
+  padding: 5px;
+  border-radius: 5px;
+}
+
+/*被选后的单选框颜色*/
+.industry-radio >>> .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  color: rgb(21, 154, 245);
+  background: #e5f1ff;
+}
+
+/*单选框样式*/
+.industry-radio >>> .el-radio-button__inner {
+  border-radius: 5px;
+  background: #F5F8FA;
+  color: #7F7F7F;
+  border: 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  margin-left: 5px;
+}
+
+/*单选框覆盖原有阴影*/
+.industry-radio >>> .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  box-shadow: none;
+}
+
+/* element滚动条组件 隐藏水平滚动条 */
+.my-scroll >>> .el-scrollbar__wrap {
+  overflow-x: hidden;
 }
 </style>

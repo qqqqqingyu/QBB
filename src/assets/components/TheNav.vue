@@ -14,13 +14,13 @@
         <router-link to="/square">视频广场</router-link>
       </li>
       <li>
-        <router-link to="/prevalence">流行度预测</router-link>
+        <router-link to="/loginAndRegister">流行度预测</router-link>
       </li>
       <li>
         <router-link to="/model">模型介绍</router-link>
       </li>
       <li>
-        <router-link to="/precautionCalculation">预警器</router-link>
+        <router-link to="/loginAndRegister">预警器</router-link>
       </li>
       <router-link to="/loginAndRegister" style="color: #FFFFFF">
         <li class="center-vertically nav-btn">
